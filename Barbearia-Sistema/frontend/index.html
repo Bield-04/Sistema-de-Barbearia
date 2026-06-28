@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber Management - Code Tech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* O conteúdo do seu styles.css direto aqui para não falhar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen">
+
+    <div class="max-w-5xl mx-auto p-6">
+        <header class="border-b border-zinc-800 pb-6 mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-wider text-white">CODE BARBER</h1>
+                <p class="text-sm text-zinc-400">Sistema de Gerenciamento / Code Tech</p>
+            </div>
+            <div id="status-badge" class="px-3 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs rounded-full">
+                Backend Online
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-zinc-900 p-6 rounded-lg border border-zinc-800 h-fit">
+                <h2 class="text-lg font-semibold mb-4 text-white">Novo Agendamento</h2>
+                <form id="form-agendamento" class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-zinc-400 mb-1">Nome do Cliente</label>
+                        <input type="text" id="nome" required class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm focus:outline-none focus:border-zinc-500 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-zinc-400 mb-1">Telefone</label>
+                        <input type="text" id="telefone" class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm focus:outline-none focus:border-zinc-500 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-zinc-400 mb-1">Serviço</label>
+                        <select id="servico" class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm focus:outline-none focus:border-zinc-500 text-white">
+                            <option value="Corte Degradê">Corte Degradê</option>
+                            <option value="Barba Completa">Barba Completa</option>
+                            <option value="Cabelo e Barba">Cabelo e Barba</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-zinc-400 mb-1">Data e Hora</label>
+                        <input type="datetime-local" id="data_hora" required class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm focus:outline-none focus:border-zinc-500 text-white">
+                    </div>
+                    <button type="submit" class="w-full bg-white text-black font-semibold p-2 rounded text-sm hover:bg-zinc-200 transition-colors">
+                        Agendar Horário
+                    </button>
+                </form>
+            </div>
+
+            <div class="md:col-span-2 bg-zinc-900 p-6 rounded-lg border border-zinc-800">
+                <h2 class="text-lg font-semibold mb-4 text-white">Horários Agendados</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-zinc-400">
+                        <thead class="text-xs uppercase tracking-wider border-b border-zinc-800 text-zinc-300">
+                            <tr>
+                                <th class="py-3 px-2">Cliente</th>
+                                <th class="py-3 px-2">Serviço</th>
+                                <th class="py-3 px-2">Data / Hora</th>
+                                <th class="py-3 px-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-agendamentos">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        async function carregarAgendamentos() {
+            try {
+                const response = await fetch(`${API_URL}/agendamentos`);
+                const dados = await response.json();
+                
+                const tabela = document.getElementById("tabela-agendamentos");
+                tabela.innerHTML = ""; 
+
+                if (dados.length === 0) {
+                    tabela.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-zinc-600">Nenhum agendamento para hoje.</td></tr>`;
+                    return;
+                }
+
+                dados.forEach(agendamento => {
+                    const dataFormatada = new Date(agendamento.data_hora).toLocaleString('pt-BR', {
+                        day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'
+                    });
+
+                    tabela.innerHTML += `
+                        <tr class="border-b border-zinc-800 hover:bg-zinc-900/50 transition-colors text-white">
+                            <td class="py-4 px-2 font-medium">${agendamento.nome_cliente}</td>
+                            <td class="py-4 px-2 text-zinc-400">${agendamento.servico}</td>
+                            <td class="py-4 px-2 text-zinc-400">${dataFormatada}</td>
+                            <td class="py-4 px-2">
+                                <span class="px-2 py-0.5 bg-zinc-800 text-zinc-300 text-xs rounded border border-zinc-700">
+                                    ${agendamento.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                document.getElementById("status-badge").innerText = "Backend Offline";
+                document.getElementById("status-badge").className = "px-3 py-1 bg-red-950 text-red-400 border border-red-800 text-xs rounded-full";
+            }
+        }
+
+        document.getElementById("form-agendamento").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const novoAgendamento = {
+                nome_cliente: document.getElementById("nome").value,
+                telefone: document.getElementById("telefone").value || null,
+                servico: document.getElementById("servico").value,
+                data_hora: document.getElementById("data_hora").value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/agendamentos`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(novoAgendamento)
+                });
+
+                if (response.ok) {
+                    document.getElementById("form-agendamento").reset(); 
+                    carregarAgendamentos(); 
+                } else {
+                    alert("Erro ao salvar o agendamento.");
+                }
+            } catch (error) {
+                console.error("Erro ao enviar dados:", error);
+            }
+        });
+
+        carregarAgendamentos();
+    </script>
+</body>
+</html>
