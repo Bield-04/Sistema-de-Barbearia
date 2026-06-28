@@ -1,4 +1,4 @@
-const API_URL = "https://sistema-de-barbearia-5zcm.onrender.com";
+const API_URL = "const API_URL = "https://barbearia-backend-7794.onrender.com";";
 
 async function carregarAgendamentos() {
     try {
