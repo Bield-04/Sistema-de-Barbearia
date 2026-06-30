@@ -1,4 +1,5 @@
-const API_URL = "const API_URL = "https://barbearia-backend-7794.onrender.com";";
+// Corrigido: Linha limpa e com a URL correta
+const API_URL = "https://barbearia-backend-7794.onrender.com";
 
 async function carregarAgendamentos() {
     try {
@@ -66,4 +67,5 @@ document.getElementById("form-agendamento").addEventListener("submit", async (e)
     }
 });
 
+// Inicializa a listagem ao carregar a página
 carregarAgendamentos();
